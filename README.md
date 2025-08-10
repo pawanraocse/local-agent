@@ -70,6 +70,12 @@ You can modify the models in `docker-compose.yml` and `start-ollama.sh`.
 - `POST /upload`: Upload new documents
 - `GET /docs`: API documentation (Swagger UI)
 
+## API Documentation UI
+
+- The project provides an interactive API documentation UI using **Swagger (OpenAPI)**, automatically available at:
+  - [http://localhost:8000/docs#/default/generate_code_generate_post](http://localhost:8000/docs#/default/generate_code_generate_post)
+- Use this UI to explore, test, and debug all available API endpoints directly from your browser.
+
 ### CLI Usage
 
 You can also use the agent via CLI for local/manual testing:
