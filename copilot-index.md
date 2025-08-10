@@ -124,3 +124,45 @@ To make Local-Agent a full-featured coding agent (using LangChain + local Ollama
     - Add a Model Control Plane (MCP) server/module to enable integration with external UIs or tools.
     - Define clear APIs/interfaces for communication (REST/gRPC/message queues).
     - Document responsibilities, flows, and update security/logging as needed.
+
+## Agentic AI End-to-End Flow Diagram
+
+[User/API Client]
+    |
+    v
+[FastAPI Endpoint (/generate)]
+    |
+    v
+[LangChainAgent (app/agentic/langchain_agent.py)]
+    |
+    v
+[Code Generation Tool]
+    |
+    v
+[Code Review Tool]
+    |
+    v
+[Code Refactor Tool]
+    |
+    v
+[Test Generation Tool]
+    |
+    v
+[AgentMemory (ChromaDB) - stores input/output for traceability]
+    |
+    v
+[Comprehensive Response (code, review, refactored code, tests, metadata)]
+    |
+    v
+[API Response to User]
+
+**Flow Description:**
+1. User/API Client sends a request (e.g., /generate) to the FastAPI backend.
+2. FastAPI Endpoint receives the request and forwards it to the LangChainAgent.
+3. LangChainAgent orchestrates a multi-step workflow:
+    - Code Generation Tool: Generates initial code based on the task/context.
+    - Code Review Tool: Reviews the generated code for quality and issues.
+    - Code Refactor Tool: Refactors the code for readability, performance, or maintainability.
+    - Test Generation Tool: Generates test cases for the code.
+4. At each step, AgentMemory (ChromaDB) stores input/output for traceability and future retrieval (RAG).
+5. The final, comprehensive response (including code, review, refactored code, tests, and metadata) is returned to the user/client.

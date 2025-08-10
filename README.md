@@ -175,3 +175,38 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - All backend logic is under the `app/` directory.
 - Configuration and initialization are separated for clarity and maintainability.
+
+## 🛠️ Agentic AI End-to-End Flow Diagram
+
+```mermaid
+graph TD
+    A[User/API Client] -->|/generate| B[FastAPI Endpoint]
+    B --> C[LangChainAgent (app/agentic/langchain_agent.py)]
+    C --> D1[Code Generation Tool]
+    D1 --> D2[Code Review Tool]
+    D2 --> D3[Code Refactor Tool]
+    D3 --> D4[Test Generation Tool]
+    D4 --> E[AgentMemory (ChromaDB)]
+    E --> F[Comprehensive Response]
+    F -->|API Response| A
+
+    subgraph Agentic Workflow
+        D1
+        D2
+        D3
+        D4
+    end
+```
+
+### **Flow Description**
+1. **User/API Client** sends a request (e.g., /generate) to the FastAPI backend.
+2. **FastAPI Endpoint** receives the request and forwards it to the **LangChainAgent**.
+3. **LangChainAgent** orchestrates a multi-step workflow:
+    - **Code Generation Tool**: Generates initial code based on the task/context.
+    - **Code Review Tool**: Reviews the generated code for quality and issues.
+    - **Code Refactor Tool**: Refactors the code for readability, performance, or maintainability.
+    - **Test Generation Tool**: Generates test cases for the code.
+4. At each step, **AgentMemory (ChromaDB)** stores input/output for traceability and future retrieval (RAG).
+5. The final, comprehensive response (including code, review, refactored code, tests, and metadata) is returned to the user/client.
+
+---
