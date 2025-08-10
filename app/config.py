@@ -19,8 +19,8 @@ print("CONFIG LOADED: logging configured for 'config' logger")
 
 # Detect test environment and override model if needed
 # Enhanced logging for model selection
-if os.getenv("PYTEST_CURRENT_TEST") and not os.getenv("OLLAMA_MODEL"):
-    logger.info("[CONFIG] Detected test environment (PYTEST_CURRENT_TEST set). Using lightweight model: 'qwen2.5-coder:0.5b' for OLLAMA_MODEL.")
+if os.getenv("PYTEST_CURRENT_TEST") or not os.getenv("OLLAMA_MODEL"):
+    logger.info("[CONFIG] Detected test environment (PYTEST_CURRENT_TEST set) or OLLAMA_MODEL not set. Using lightweight model: 'qwen2.5-coder:0.5b' for OLLAMA_MODEL.")
     MODEL_NAME = "qwen2.5-coder:0.5b"
 else:
     MODEL_NAME = os.getenv("OLLAMA_MODEL")

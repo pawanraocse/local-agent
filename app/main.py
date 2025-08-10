@@ -9,6 +9,10 @@ from agent import Agent
 import logging
 from typing import List
 from pydantic import BaseModel
+from llm.ollama_llm_interface import OllamaLLMInterface
+from agentic.tools_loader import load_agent_tools
+from agentic.agent_service import AgenticAIService
+import time
 
 # Create documents directory if it doesn't exist
 DOCUMENTS_DIR = Path("/app/documents")
@@ -36,6 +40,7 @@ app.add_middleware(
 )
 
 logger = logging.getLogger("api")
+logging.basicConfig(level=logging.INFO)  # Ensure root logger is configured
 
 @app.get("/")
 async def root():
@@ -56,19 +61,30 @@ class CodeGenerationResponse(BaseModel):
     code: str
     model: str
 
+# Initialize LLM and tools once for the app
+llm_interface = OllamaLLMInterface()
+llm = llm_interface.get_llm()
+tools = load_agent_tools(llm)
+
+# Initialize AgenticAIService once at startup
+agentic_service = AgenticAIService(llm, tools)
+
 @app.post("/generate", response_model=CodeGenerationResponse)
 async def generate_code(request: CodeGenerationRequest = Body(...)):
     """
-    Generate code for a given task using the Agent (LLM + RAG).
+    Generate code for a given task using the AgenticAIService (LLM + tools).
     """
     logger.info(f"Received code generation request: task='{request.task}'")
     if not request.task or not request.task.strip():
         logger.info("Empty task received, returning empty code response.")
         return CodeGenerationResponse(code="", model="")
-    agent = Agent()
-    code = agent.generate_code(task=request.task, context=request.context)
-    logger.info("Code generation complete.")
-    return CodeGenerationResponse(code=code, model="")
+    logger.info("Starting code generation processing...")
+    start_time = time.time()
+    logger.info("AgenticAIService initialized. Invoking agent...")
+    code = agentic_service.run(request.task)
+    elapsed = time.time() - start_time
+    logger.info(f"Code generation complete. Task='{request.task}' Elapsed={elapsed:.2f}s")
+    return CodeGenerationResponse(code=code, model=llm_interface.model_name)
 
 class CodeReviewRequest(BaseModel):
     code: str
