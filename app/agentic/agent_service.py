@@ -6,8 +6,13 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.tools import BaseTool
 from langchain.agents import AgentExecutor, create_react_agent
+from dto.code_generation import CodeGenerationResponse
 
 logger = logging.getLogger(__name__)
+
+MAX_AGENT_ITERATIONS = 3
+MAX_AGENT_EXECUTION_TIME = 15
+CODE_BLOCK_REGEX = r"```(?:python)?\n(.*?)```"
 
 
 class AgenticAIService:
@@ -79,17 +84,18 @@ Question: {input}
             tools=self.tools,
             verbose=self.verbose,
             handle_parsing_errors=True,
-            max_iterations=3,  # Keep iterations small for speed
-            max_execution_time=15  # Limit runtime to avoid long stalls
+            max_iterations=MAX_AGENT_ITERATIONS,  # Keep iterations small for speed
+            max_execution_time=MAX_AGENT_EXECUTION_TIME  # Limit runtime to avoid long stalls
         )
 
     def _extract_code(self, text: str) -> str:
-        # Find all Python code blocks
-        matches = re.findall(r"```(?:python)?\n(.*?)```", text, re.DOTALL)
+        """
+        Extracts the first Python code block from markdown text,
+        or returns the full text if no code block is found.
+        """
+        matches = re.findall(CODE_BLOCK_REGEX, text, re.DOTALL)
         if matches:
-            # Return the first code block found, stripped of leading/trailing whitespace
             return matches[0].strip()
-            # If no code block found, return original text stripped
         return text.strip()
 
     def run(self, query: str) -> str:
@@ -97,28 +103,35 @@ Question: {input}
         Executes the agent against a user query, with timing logs.
         Uses a direct LLM call if no tools are loaded to avoid ReAct overhead.
         """
-        logger.info(f"Running agent with query: {query}")
-        start_time = time.time()
+        try:
+            logger.info(f"Running agent with query: {query}")
+            start_time = time.time()
 
-        # Fast-path: direct LLM call
-        if not self.tools or not self.agent_executor:
-            logger.info("No tools loaded — using direct LLM call for speed.")
-            result = self.llm.invoke(query)
+            # Fast-path: direct LLM call
+            if not self.tools or not self.agent_executor:
+                logger.info("No tools loaded — using direct LLM call for speed.")
+                result = self.llm.invoke(query)
+                elapsed = time.time() - start_time
+                logger.info(f"Direct LLM call completed in {elapsed:.2f} seconds.")
+                text = result if isinstance(result, str) else str(result)
+                code = self._extract_code(text)
+                return code
+
+            # Standard ReAct agent execution
+            result = self.agent_executor.invoke({"input": query})
             elapsed = time.time() - start_time
-            logger.info(f"Direct LLM call completed in {elapsed:.2f} seconds.")
-            return result if isinstance(result, str) else str(result)
+            logger.info(f"Agent execution completed in {elapsed:.2f} seconds.")
 
-        # Standard ReAct agent execution
-        result = self.agent_executor.invoke({"input": query})
-        elapsed = time.time() - start_time
-        logger.info(f"Agent execution completed in {elapsed:.2f} seconds.")
+            # Handle multiple possible keys for final output
+            output = (
+                    result.get("code")
+                    or result.get("output")
+                    or result.get("output_text")
+                    or str(result)
+            )
+            code = self._extract_code(output)
+            return code
 
-        # Handle multiple possible keys for final output
-        output = (
-                result.get("code")
-                or result.get("output")
-                or result.get("output_text")
-                or str(result)
-        )
-
-        return self._extract_code(output)
+        except Exception as e:
+            logger.error(f"Agent execution failed: {e}", exc_info=True)
+            return "error"
