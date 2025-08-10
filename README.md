@@ -178,24 +178,37 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🛠️ Agentic AI End-to-End Flow Diagram
 
-```mermaid
-graph TD
-    A[User/API Client] -->|/generate| B[FastAPI Endpoint]
-    B --> C[LangChainAgent (app/agentic/langchain_agent.py)]
-    C --> D1[Code Generation Tool]
-    D1 --> D2[Code Review Tool]
-    D2 --> D3[Code Refactor Tool]
-    D3 --> D4[Test Generation Tool]
-    D4 --> E[AgentMemory (ChromaDB)]
-    E --> F[Comprehensive Response]
-    F -->|API Response| A
+**Agentic AI End-to-End Flow:**
 
-    subgraph Agentic Workflow
-        D1
-        D2
-        D3
-        D4
-    end
+1. **User/API Client** sends a request (e.g., `/generate`) to the FastAPI backend.
+2. **FastAPI Endpoint** receives the request and forwards it to the **LangChainAgent**.
+3. **LangChainAgent** orchestrates a multi-step workflow:
+    - **Code Generation Tool**: Generates initial code based on the task/context.
+    - **Code Review Tool**: Reviews the generated code for quality and issues.
+    - **Code Refactor Tool**: Refactors the code for readability, performance, or maintainability.
+    - **Test Generation Tool**: Generates test cases for the code.
+4. At each step, **AgentMemory (ChromaDB)** stores input/output for traceability and future retrieval (RAG).
+5. The final, comprehensive response (including code, review, refactored code, tests, and metadata) is returned to the user/client.
+
+**Flow Diagram (Textual):**
+
+```
+User/API Client
+   |
+   v
+FastAPI Endpoint (`/generate`, `/review`, `/history`)
+   |
+   v
+LangChainAgent (ReAct, tools, memory)
+   |
+   v
+[Code Generation Tool] → [Code Review Tool] → [Code Refactor Tool] → [Test Generation Tool]
+   |
+   v
+AgentMemory (ChromaDB)
+   |
+   v
+Comprehensive Response (API/CLI)
 ```
 
 ### **Flow Description**
@@ -208,5 +221,42 @@ graph TD
     - **Test Generation Tool**: Generates test cases for the code.
 4. At each step, **AgentMemory (ChromaDB)** stores input/output for traceability and future retrieval (RAG).
 5. The final, comprehensive response (including code, review, refactored code, tests, and metadata) is returned to the user/client.
+
+## Advanced Features & Architecture
+
+### Agentic Memory with ChromaDB
+- Integrated persistent memory using ChromaDB (vector DB) for context-aware agent responses.
+- Memory context is retrieved and injected into agent prompts for multi-turn and context-dependent queries.
+- Memory warnings (e.g., requesting more results than exist) are handled gracefully and do not impact agent stability.
+
+### Tool Use & LangChain ReAct Agent
+- Uses LangChain's ReAct agent architecture for tool-based reasoning (e.g., Wikipedia search, code review).
+- Patched Wikipedia tool to always use the `lxml` parser, suppressing BeautifulSoup warnings.
+- Agent iteration and execution time limits are configurable (default: 8 iterations, 60 seconds) to balance performance and completeness.
+
+### Error Handling & Logging
+- Structured logging throughout all layers for traceability and debugging.
+- Robust error handling with clear, actionable error messages.
+- All API responses use DTOs for consistency and security.
+
+### Configuration & Telemetry
+- Model and service configuration is centralized in `app/config.py`.
+- ChromaDB telemetry is disabled by default for privacy and to avoid known errors.
+
+## Recent Improvements
+- Increased agent iteration and execution time limits for better tool use.
+- Patched Wikipedia tool integration for parser stability.
+- Disabled ChromaDB telemetry to prevent noisy errors.
+- Improved memory context retrieval and injection for agent queries.
+- Enhanced logging and error handling across all layers.
+
+## How Memory Works
+- The agent stores and retrieves query/response pairs in ChromaDB.
+- For simple queries, memory may not impact results, but for multi-turn or context-dependent queries, memory provides relevant history to the agent.
+
+## Production Readiness
+- Modular, testable, and clean architecture following best practices.
+- All major flows are covered by unit and integration tests (see `tests/`).
+- CI/CD ready with automated test orchestration and reporting.
 
 ---
