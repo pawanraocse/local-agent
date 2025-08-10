@@ -103,45 +103,24 @@ To make Local-Agent a full-featured coding agent (using LangChain + local Ollama
 - [x] **Agent Capabilities:**
     - Code generation, review, refactoring, bug fixing, test case creation, API design, code flow analysis.
     - Expose these capabilities via REST API endpoints.
-- [ ] **LangChain Integration:**
-    - Use LangChain chains/tools for orchestration and reasoning.
-    - Connect LangChain to Ollama for LLM-powered code tasks.
-- [ ] **LangChain Orchestration:**
-    - Integrate LangChain chains, tools, and agents for modular, composable workflows.
-    - Enable multi-step, multi-agent orchestration for complex coding tasks.
-- [ ] **Memory & RAG:**
-    - Persist agent history, context, and code snippets in a vector DB (ChromaDB).
-    - Implement Retrieval-Augmented Generation (RAG) for context-aware responses.
-- [ ] **Advanced Memory & RAG:**
-    - Maintain agent context/history using vector stores (ChromaDB, Weaviate, etc.).
-    - Implement advanced Retrieval-Augmented Generation (RAG) for context-aware, high-quality responses.
-- [ ] **DTOs & API Design:**
-    - Use DTOs for all external communications.
-    - Document and validate all API endpoints.
-- [ ] **Security & Validation:**
-    - Add authentication (OAuth2/JWT) and input validation for production readiness.
-    - Integrate structured error handling and validation at all layers.
-- [ ] **Testing & CI/CD:**
-    - Expand unit/integration tests for agent logic and API endpoints.
+- [ ] **Agentic AI Architecture:**
+    - Refactor Local-Agent to use an agentic architecture leveraging LangChain and LangGraph for multi-step reasoning, tool use, and orchestration (e.g., code review → refactor → test generation).
+    - Use LangGraph to compose and orchestrate complex, multi-step coding workflows.
+    - Register all agent tools as LangChain tools for composability and extensibility.
+    - Integrate vector DBs (ChromaDB, Weaviate, etc.) to persist agent history, context, and code snippets.
+    - Implement advanced RAG for context-aware, high-quality responses.
+    - Add authentication (OAuth2/JWT), input validation, and structured error handling at all layers for production readiness.
+    - Ensure structured logging with business context (requestId, operation, userId) and maintain traceable history of agent actions and decisions.
+    - Expand unit/integration tests for agentic workflows and API endpoints; target 80%+ test coverage.
     - Integrate with CI/CD (Jenkins, GitHub Actions) for automated validation.
-    - Achieve 80%+ test coverage for business logic.
-    - Use Testcontainers for integration tests.
-- [ ] **Logging & Traceability:**
-    - Ensure structured logging with business context (requestId, operation, userId).
-    - Maintain traceable history of agent actions and decisions.
-    - Use SLF4J-style logging (or Python equivalent) with context.
-- [ ] **Documentation:**
-    - Update README.md and copilot-index.md with new modules, APIs, and flows.
+    - Update README.md and copilot-index.md with new modules, APIs, and flows after every significant change.
     - Auto-generate OpenAPI documentation for all endpoints.
-    - Maintain up-to-date project index after every significant change.
-- [ ] **Architecture & Modularity:**
+    - Maintain up-to-date project index and architectural documentation.
     - Apply clean architecture layering: Controllers → Services → Repositories.
     - Promote testability, modularity, readability, and traceability.
     - Use abstractions and avoid tight coupling.
-- [ ] **MCP Integration (Future):**
+    - Enforce naming conventions for controllers, services, DTOs, and tests.
+    - Update copilot-index.md after every significant code change, new feature, or refactor.
     - Add a Model Control Plane (MCP) server/module to enable integration with external UIs or tools.
     - Define clear APIs/interfaces for communication (REST/gRPC/message queues).
     - Document responsibilities, flows, and update security/logging as needed.
-- [ ] **Naming Conventions & Update Policy:**
-    - Enforce naming conventions for controllers, services, DTOs, and tests.
-    - Update copilot-index.md after every significant code change, new feature, or refactor.
