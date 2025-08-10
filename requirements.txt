@@ -16,3 +16,4 @@ langchain
 langgraph
 wikipedia
 numexpr
+langchain-chroma

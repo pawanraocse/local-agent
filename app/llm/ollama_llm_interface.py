@@ -1,6 +1,7 @@
 import os
 import logging
 from langchain_community.llms import Ollama  # Updated import
+from langchain_community.embeddings import OllamaEmbeddings
 
 logger = logging.getLogger(__name__)
 

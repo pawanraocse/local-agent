@@ -32,6 +32,7 @@ services:
       - OLLAMA_HOST=http://ollama:11434
       - PYTHONPATH=/app
       - PYTEST_CURRENT_TEST
+      - CHROMA_TELEMETRY_ENABLED=false
     env_file:
       - ${ENV_FILE:-.env}
     depends_on:

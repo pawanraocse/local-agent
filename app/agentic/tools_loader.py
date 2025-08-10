@@ -1,8 +1,24 @@
 from langchain_community.agent_toolkits.load_tools import load_tools
 import logging
 from typing import List, Any
+from bs4 import BeautifulSoup
+import warnings
 
 logger = logging.getLogger(__name__)
+
+# Patch Wikipedia tool to always use 'lxml' parser and suppress parser warnings
+def _patched_bs4(*args, **kwargs):
+    kwargs.setdefault('features', 'lxml')
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return _original_bs4(*args, **kwargs)
+
+try:
+    import wikipedia
+    _original_bs4 = BeautifulSoup
+    wikipedia.wikipedia.BeautifulSoup = _patched_bs4
+except ImportError:
+    pass
 
 def load_agent_tools(llm: Any, tool_names: List[str] = None):
     """
@@ -13,7 +29,7 @@ def load_agent_tools(llm: Any, tool_names: List[str] = None):
     """
     if tool_names is None:
         tool_names = [
-            # "wikipedia",
+            "wikipedia",
             # "llm-math",
             # "serpapi",  # Uncomment if you have an API key
             # "arxiv",    # Uncomment if you want arXiv search

@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from llm.ollama_llm_interface import OllamaLLMInterface
 from agentic.tools_loader import load_agent_tools
 from agentic.agent_service import AgenticAIService
+from memory.chroma_memory_service import ChromaMemoryService
 import time
 
 # Create documents directory if it doesn't exist
@@ -57,17 +58,16 @@ async def upload_document(file: UploadFile = File(...)):
         buffer.write(content)
     return {"filename": file.filename, "status": "uploaded"}
 
-class CodeGenerationResponse(BaseModel):
-    code: str
-    model: str
-
 # Initialize LLM and tools once for the app
 llm_interface = OllamaLLMInterface()
 llm = llm_interface.get_llm()
 tools = load_agent_tools(llm)
 
-# Initialize AgenticAIService once at startup
-agentic_service = AgenticAIService(llm, tools)
+# Initialize ChromaMemoryService once for the app
+memory_service = ChromaMemoryService()
+
+# Initialize AgenticAIService once at startup, injecting memory
+agentic_service = AgenticAIService(llm, tools, memory_service=memory_service)
 
 @app.post("/generate", response_model=CodeGenerationResponse)
 async def generate_code(request: CodeGenerationRequest = Body(...)):
@@ -81,10 +81,19 @@ async def generate_code(request: CodeGenerationRequest = Body(...)):
     logger.info("Starting code generation processing...")
     start_time = time.time()
     logger.info("AgenticAIService initialized. Invoking agent...")
-    code = agentic_service.run(request.task)
+    result = agentic_service.run(request.task)
     elapsed = time.time() - start_time
     logger.info(f"Code generation complete. Task='{request.task}' Elapsed={elapsed:.2f}s")
-    return CodeGenerationResponse(code=code, model=llm_interface.model_name)
+    # Handle both string and dict results from agentic_service.run
+    if isinstance(result, dict):
+        return CodeGenerationResponse(
+            code=result.get("code") or result.get("error") or "",
+            model=result.get("model", llm_interface.model_name),
+            error=result.get("error"),
+            trace=result.get("trace")
+        )
+    else:
+        return CodeGenerationResponse(code=result, model=llm_interface.model_name)
 
 class CodeReviewRequest(BaseModel):
     code: str

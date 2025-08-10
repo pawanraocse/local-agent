@@ -1,5 +1,12 @@
 # Copilot Index: Local-Agent Project
 
+## TODO / Recent Updates
+- [x] Integrated LangChain ReAct agent via `AgenticAIService` (`app/agentic/agent_service.py`) for advanced code generation and tool use.
+- [x] Added robust error handling, DTO usage, and structured logging throughout the agent and API layers.
+- [x] Switched to model auto-selection logic in `config.py` for test/dev speed.
+- [x] Updated prompt engineering and agent execution for smaller models and better reliability.
+- [x] Improved project index to reflect new agentic architecture and flows.
+
 ## Overview
 Local-Agent is a Python-based backend service designed for local AI agent orchestration. It leverages Docker for containerization and supports integration with Ollama for LLM operations. The project is structured for modularity, testability, and clean separation of concerns.
 
@@ -124,6 +131,12 @@ To make Local-Agent a full-featured coding agent (using LangChain + local Ollama
     - Add a Model Control Plane (MCP) server/module to enable integration with external UIs or tools.
     - Define clear APIs/interfaces for communication (REST/gRPC/message queues).
     - Document responsibilities, flows, and update security/logging as needed.
+- [ ] Integrate vector DB memory (ChromaDB) for agent context/history and RAG (Retrieval-Augmented Generation).
+    - Store user queries, agent responses, code snippets, reviews, and metadata.
+    - Use LangChain's VectorStoreRetrieverMemory or similar for memory integration.
+    - Update AgenticAIService to inject and use memory for context-aware responses.
+    - Expose memory/history APIs for querying and management.
+    - Ensure persistent ChromaDB storage in Docker Compose.
 
 ## Agentic AI End-to-End Flow Diagram
 
