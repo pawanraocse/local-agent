@@ -1,6 +1,9 @@
 import argparse
 from agent import Agent
 from dto.code_generation import CodeGenerationRequest, CodeGenerationResponse
+from dto.mcp import MCPContextRequest
+from mcp.mcp_service import MCPService
+import json
 import logging
 
 logger = logging.getLogger("cli")
@@ -17,6 +20,11 @@ def main():
     # Code review command
     review_parser = subparsers.add_parser("review", help="Review code for quality, bugs, and improvements")
     review_parser.add_argument("--code", required=True, help="Code to review (as a string or file path)")
+
+    # MCP context command
+    mcp_parser = subparsers.add_parser("mcp", help="Send context via MCP protocol")
+    mcp_parser.add_argument("--context-type", required=True, help="Type of context (e.g., user, doc, tool)")
+    mcp_parser.add_argument("--payload", required=True, help="Context payload as JSON string")
 
     args = parser.parse_args()
     agent = Agent()
@@ -38,7 +46,16 @@ def main():
         logger.info("[CLI] Reviewing code...")
         review = agent.review_code(code=code_input)
         print("\nReview Result:\n" + review)
+    elif args.command == "mcp":
+        try:
+            payload = json.loads(args.payload)
+        except Exception as e:
+            logger.error(f"Invalid JSON for payload: {e}")
+            return
+        req = MCPContextRequest(context_type=args.context_type, payload=payload)
+        service = MCPService()
+        resp = service.handle_context(req)
+        print(f"\nMCP Response: {resp.json(indent=2)}")
 
 if __name__ == "__main__":
     main()
-

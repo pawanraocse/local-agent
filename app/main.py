@@ -14,6 +14,9 @@ from agentic.tools_loader import load_agent_tools
 from agentic.agent_service import AgenticAIService
 from memory.chroma_memory_service import ChromaMemoryService
 import time
+from dto.mcp import MCPContextRequest, MCPContextResponse
+from mcp.mcp_service import MCPService
+from fastapi import Body
 
 # Create documents directory if it doesn't exist
 DOCUMENTS_DIR = Path("/app/documents")
@@ -140,6 +143,24 @@ async def get_agent_history(limit: int = 10):
     except Exception as e:
         logger.error(f"Error fetching agent history: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch agent history.")
+
+# Initialize MCPService with AgenticAIService for orchestration
+mcp_service = MCPService(agentic_service)
+
+@app.post("/mcp", response_model=MCPContextResponse, tags=["MCP"])
+async def mcp_context(request: MCPContextRequest = Body(...)):
+    """
+    Handle Model Context Protocol (MCP) context requests.
+    Supports orchestration of code generation and other agentic flows.
+    """
+    logger.info(f"Received MCP context request: type='{request.context_type}'")
+    try:
+        response = mcp_service.handle_context(request)
+        logger.info("MCP context processed successfully.")
+        return response
+    except Exception as e:
+        logger.error(f"MCP context processing failed: {e}")
+        return MCPContextResponse(status="error", data={"error": str(e)})
 
 if __name__ == "__main__":
     import uvicorn

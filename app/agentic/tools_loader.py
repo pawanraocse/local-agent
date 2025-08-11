@@ -29,7 +29,7 @@ def load_agent_tools(llm: Any, tool_names: List[str] = None):
     """
     if tool_names is None:
         tool_names = [
-            "wikipedia",
+            # "wikipedia",
             # "llm-math",
             # "serpapi",  # Uncomment if you have an API key
             # "arxiv",    # Uncomment if you want arXiv search
